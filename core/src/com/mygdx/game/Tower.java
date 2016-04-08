@@ -9,12 +9,23 @@ public class Tower extends Actor
     Texture texture;
     int rotation;
     int range;
+    Target target;
 
     public void draw(Batch batch, float alpha)
     {
         //batch.draw(texture,posX,posY);
         batch.draw(texture, this.getX(), this.getY(), texture.getWidth()/2, texture.getHeight()/2, texture.getWidth(), texture.getHeight(), 1f, 1f, rotation, 0, 0, texture.getWidth(), texture.getHeight(), false, false);
 
+    }
+    
+    public void setTarget(Target target)
+    {
+    	this.target = target;
+    }
+    
+    public Target getTarget()
+    {
+    	return target;
     }
     
     public void setRange(int range)

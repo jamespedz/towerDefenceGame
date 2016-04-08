@@ -32,6 +32,9 @@ public class MyGdxGame extends ApplicationAdapter {
 	Vector<Enemy> enemies = new Vector<Enemy>();
 	Enemy enemy1, enemy2;
 	long startTime;
+	BackgroundTile[][] grid;
+	int gridXSize = 60;
+	int gridYSize = 30;
 	
 	@Override
 	public void create () 
@@ -44,72 +47,9 @@ public class MyGdxGame extends ApplicationAdapter {
 		camera = new OrthographicCamera(64*30, 64*60);
 		camera.position.set(camera.viewportWidth / 2f, camera.viewportHeight / 2f, 0);
 		camera.update();
-		
-		int gridXSize = 60;
-		int gridYSize = 30;
-		MyActor[][] grid = new MyActor[gridXSize][gridYSize]; //Grid for background
-		
-		
-		
-		for(int i = 0; i < gridXSize; i++)
-		{
-			for(int j = 0; j < gridYSize; j++)
-			{
-				MyActor actor = new MyActor();
-				if(i>=10&&i<=50)
-				{
-					actor.setTexture(new Texture("Kills_skull_2_64x64.png"));
-				}
-				else
-				{
-					actor.setTexture(new Texture("Kills_skull_64x64.png"));
-				}
-				actor.setX(i*64);
-				actor.setY(j*64);
-				grid[i][j] = actor;
-			}
-		}
-		
-		for(int k = 0; k < gridXSize; k++)
-		{
-			for(int l = 0; l < gridYSize; l++)
-			{
-				stage.addActor(grid[k][l]);
-			}
-		}
-		
-		tower = new Tower();
-		tower.setX(((60*64)/2)-64);
-		tower.setY(((30*64)/2)-64);
-		tower.setWidth(128);
-		tower.setHeight(128);
-		tower.setRange(350);
-		tower.setTexture(new Texture("Kills_skull_3_128x128.png"));
-		towers.add(tower);
-		
-		tower2 = new Tower();
-		tower2.setX(((20*64))-64);
-		tower2.setY(((30*64)/2)-64);
-		tower2.setWidth(128);
-		tower2.setHeight(128);
-		tower2.setRange(600);
-		tower2.setTexture(new Texture("Kills_skull_3_128x128.png"));
-		towers.add(tower2);
-		
-		tower3 = new Tower();
-		tower3.setX(((35*64))-64);
-		tower3.setY(((10*64)/2)-64);
-		tower3.setWidth(128);
-		tower3.setHeight(128);
-		tower3.setRange(400);
-		tower3.setTexture(new Texture("Kills_skull_3_128x128.png"));
-		towers.add(tower3);
-		
-		for (Tower currentTower : towers)
-		{
-			stage2.addActor(currentTower); 
-		}	
-		
+	
+		createMap();
+		createTowers();
 		createEnemies();
 		
 		startTime = System.currentTimeMillis();
@@ -134,15 +74,75 @@ public class MyGdxGame extends ApplicationAdapter {
         return path;
 	}
 	
+	public void createMap()
+	{
+		grid = new BackgroundTile[gridXSize][gridYSize]; //Grid for background
+
+		for(int i = 0; i < gridXSize; i++)
+		{
+			for(int j = 0; j < gridYSize; j++)
+			{
+				BackgroundTile actor = new BackgroundTile();
+				if(i>=10&&i<=50)
+				{
+					actor.setTexture(new Texture("Kills_skull_2_64x64.png"));
+				}
+				else
+				{
+					actor.setTexture(new Texture("Kills_skull_64x64.png"));
+				}
+				actor.setX(i*64);
+				actor.setY(j*64);
+				grid[i][j] = actor;
+			}
+		}
+		
+		for(int k = 0; k < gridXSize; k++)
+		{
+			for(int l = 0; l < gridYSize; l++)
+			{
+				stage.addActor(grid[k][l]);
+			}
+		}
+	}
+	
+	public void createTowers()
+	{
+		tower = new Tower();
+		tower.setX(((60*64)/2)-64);
+		tower.setY(((30*64)/2)-64);
+		tower.setWidth(128);
+		tower.setHeight(128);
+		tower.setRange(350);
+		tower.setTarget(Target.FARTHEST);
+		tower.setTexture(new Texture("Kills_skull_3_128x128.png"));
+		towers.add(tower);
+		
+		tower2 = new Tower();
+		tower2.setX(((40*64)/2)-64);
+		tower2.setY(((30*64)/2)-64);
+		tower2.setWidth(128);
+		tower2.setHeight(128);
+		tower2.setRange(500);
+		tower2.setTarget(Target.CLOSEST);
+		tower2.setTexture(new Texture("Kills_skull_3_128x128.png"));
+		towers.add(tower2);
+
+		
+		for (Tower currentTower : towers)
+		{
+			stage2.addActor(currentTower); 
+		}	
+	}
 	
 	public void createEnemies()
 	{
 		
 		
-		int startDelay = 500;
+		int startDelay = 250;
 		Vector2 startPosition = new Vector2(((20*64)/2)-64, ((40*64)/2)-64);
 		
-		for(int i = 0; i < 10; i++)
+		for(int i = 0; i < 50; i++)
 		{
 			SequenceAction pathToFollow = createPath();
 			Enemy enemyToAdd = new Enemy();
@@ -157,40 +157,7 @@ public class MyGdxGame extends ApplicationAdapter {
 		}
 	}
 	
-	public class MyActor extends Actor 
-	{
-        Texture texture;
-        int posX;
-        int posY;
-        int rotation;
-
-        public void draw(Batch batch, float alpha)
-        {
-            //batch.draw(texture,posX,posY);
-            batch.draw(texture, posX, posY, texture.getWidth()/2, texture.getHeight()/2, texture.getWidth(), texture.getHeight(), 1f, 1f, rotation, 0, 0, texture.getWidth(), texture.getHeight(), false, false);
-
-        }
-        
-        public void setTexture(Texture texture)
-        {
-        	this.texture = texture;
-        }
-        
-        public void setX(int posX)
-        {
-        	this.posX = posX;
-        }
-        
-        public void setY(int posY)
-        {
-        	this.posY = posY;
-        }
-        
-        public void setRotation(int rotation)
-        {
-        	this.rotation = rotation;
-        }
-    }
+	
 	
 	public float distanceBetweenPoints(float x1, float y1, float x2, float y2)
 	{
@@ -205,13 +172,37 @@ public class MyGdxGame extends ApplicationAdapter {
 		for (Enemy enemy : enemies)
 		{
 			float tempDistance = distanceBetweenPoints(tower.getX(), tower.getY(), enemy.getX(), enemy.getY());
-			if(tempDistance < distance)
+			if(tempDistance < distance&&tempDistance<tower.getRange())
 			{
 				closestEnemy = enemy;
 				distance = tempDistance;
 			}
 		}
 		return closestEnemy;
+	}
+	
+	public Enemy farthestEnemyInRange(Tower tower)
+	{
+		Float distance = 0f;
+		Enemy farthestEnemy = null;
+		System.out.println("-------------------");
+		for (Enemy enemy : enemies)
+		{
+			float tempDistance = distanceBetweenPoints(tower.getX(), tower.getY(), enemy.getX(), enemy.getY());
+			if(tempDistance > distance&&tempDistance < tower.getRange())
+			{
+				System.out.println(tempDistance + " is less than " + tower.getRange());
+				farthestEnemy = enemy;
+				distance = tempDistance;
+			}
+		}
+		
+		if(farthestEnemy!=null)
+		{
+			System.out.println("This: " + distance + " should match");
+			System.out.println("This: " + distanceBetweenPoints(tower.getX(), tower.getY(), farthestEnemy.getX(), farthestEnemy.getY()));
+		}
+		return farthestEnemy;
 	}
 
 	@Override
@@ -245,7 +236,7 @@ public class MyGdxGame extends ApplicationAdapter {
 		
 		stage2.getViewport().setCamera(camera);
         stage2.act(Gdx.graphics.getDeltaTime());
-        System.out.println(Gdx.graphics.getDeltaTime());
+
         stage2.draw();
 	}
 	
@@ -258,19 +249,32 @@ public class MyGdxGame extends ApplicationAdapter {
 		
 		for (Tower currentTower : towers)
 		{
-			Enemy closestEnemy = closestEnemy(currentTower);
-
-			double enemyX = closestEnemy.getX();
-			double enemyY = closestEnemy.getY();
-			float towerX = currentTower.getX()+64;
-			float towerY = currentTower.getY()+64;  
+			Enemy currentEnemy = null;
 			
-			float dist = (float) Math.sqrt(Math.pow(enemyX - towerX, 2) + Math.pow(enemyY - towerY, 2) );
-			
-			if(dist < currentTower.getRange())
+			if(currentTower.getTarget().equals(Target.CLOSEST))
 			{
-				double theta = 180.0 / Math.PI * Math.atan2(towerX - enemyX, enemyY - towerY);
-				currentTower.setRotation((int)theta);
+				currentEnemy = closestEnemy(currentTower);
+			}
+			else if(currentTower.getTarget().equals(Target.FARTHEST))
+			{
+				currentEnemy = farthestEnemyInRange(currentTower);
+			}
+			
+			if(currentEnemy!=null)
+			{
+				double enemyX = currentEnemy.getX();
+				double enemyY = currentEnemy.getY();
+				float towerX = currentTower.getX()+64;
+				float towerY = currentTower.getY()+64;  
+				
+				float dist = (float) Math.sqrt(Math.pow(enemyX - towerX, 2) + Math.pow(enemyY - towerY, 2) );
+				
+				
+				if(currentEnemy!=null)
+				{
+					double theta = 180.0 / Math.PI * Math.atan2(towerX - enemyX, enemyY - towerY);
+					currentTower.setRotation((int)theta);
+				}
 			}
 		}
 		
