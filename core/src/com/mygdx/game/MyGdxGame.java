@@ -46,7 +46,8 @@ public class MyGdxGame extends ApplicationAdapter implements InputProcessor{
 	int gridYSize = 14;
 	TiledMap tiledMap;
     TiledMapRenderer tiledMapRenderer;
-    Tower highlighted, rightTowerPanel, leftTowerPanel;
+    BackgroundTile highlighted, rightTowerPanel, leftTowerPanel;
+    Vector<BackgroundTile> availableTowers = new Vector<BackgroundTile>();
     Boolean leftTowerPanelState, rightTowerPanelState;
     float uiMovementSpeed;
 	
@@ -116,6 +117,7 @@ public class MyGdxGame extends ApplicationAdapter implements InputProcessor{
 
 				actor.setX(i*64);
 				actor.setY(j*64);
+				actor.setPosition(i*64, j*64);
 				grid[i][j] = actor;
 			}
 		}
@@ -134,32 +136,52 @@ public class MyGdxGame extends ApplicationAdapter implements InputProcessor{
 		leftTowerPanelState = false;
 		rightTowerPanelState = false;
 		
-		highlighted = new Tower();
-		highlighted.setX(0);
-		highlighted.setY(0);
+		highlighted = new BackgroundTile();
+		highlighted.setPosition(0-64, 0-64);
 		highlighted.setTexture(new Texture("Tiles/tile_70.png"));
 		highlighted.setWidth(64);
 		highlighted.setHeight(64);
 
 		stage3.addActor(highlighted);
 		
-		rightTowerPanel = new Tower();
-		rightTowerPanel.setX(17*64);
-		rightTowerPanel.setY(15*64);
+		rightTowerPanel = new BackgroundTile();
+		rightTowerPanel.setPosition((20-5)*64, 15*64);
 		rightTowerPanel.setTexture(new Texture("towerPanel.png"));
-		rightTowerPanel.setWidth(3*64);
+		rightTowerPanel.setWidth(5*64);
 		rightTowerPanel.setHeight(14*64);
 
 		stage3.addActor(rightTowerPanel);
 		
-		leftTowerPanel = new Tower();
-		leftTowerPanel.setX(0*64);
-		leftTowerPanel.setY(15*64);
+		leftTowerPanel = new BackgroundTile();
+		leftTowerPanel.setPosition(0*64, 15*64);
 		leftTowerPanel.setTexture(new Texture("towerPanel.png"));
-		leftTowerPanel.setWidth(3*64);
+		leftTowerPanel.setWidth(5*64);
 		leftTowerPanel.setHeight(14*64);
 
 		stage3.addActor(leftTowerPanel);
+		
+		BackgroundTile availableTower1 = new BackgroundTile();
+		availableTower1.setPosition((1*64)-32, ((13+13)*64)+32);
+		availableTower1.setTexture(new Texture("Kills_skull_3_128x128.png"));
+		availableTower1.setWidth(1*128);
+		availableTower1.setHeight(1*128);
+		availableTowers.add(availableTower1);
+		//stage3.addActor(availableTower1);
+		
+		BackgroundTile availableTower2 = new BackgroundTile();
+		availableTower2.setPosition((3*64)-32, ((13+13)*64)+32);
+		availableTower2.setTexture(new Texture("Kills_skull_3_128x128.png"));
+		availableTower2.setWidth(1*128);
+		availableTower2.setHeight(1*128);
+		availableTowers.add(availableTower2);
+		
+		for (BackgroundTile availableTowers : availableTowers)
+		{
+			stage3.addActor(availableTowers);
+		}
+		
+		stage3.addActor(availableTower2);
+		
 		
 		topBar = new BackgroundTile[gridXSize];
 		for(int i = 0; i < gridXSize; i++)
@@ -168,8 +190,8 @@ public class MyGdxGame extends ApplicationAdapter implements InputProcessor{
 			
 			actor.setTexture(new Texture("Tiles/tile_203.png"));
 
-			actor.setX(i*64);
-			actor.setY(14*64);
+			actor.setPosition(i*64, 14*64);
+			
 			topBar[i] = actor;
 		}
 		
@@ -186,6 +208,7 @@ public class MyGdxGame extends ApplicationAdapter implements InputProcessor{
 	
 	public void createTowers()
 	{
+		/*
 		tower = new Tower();
 		tower.setX(3*64);
 		tower.setY(3*64);
@@ -210,7 +233,8 @@ public class MyGdxGame extends ApplicationAdapter implements InputProcessor{
 		for (Tower currentTower : towers)
 		{
 			stage2.addActor(currentTower); 
-		}	
+		}
+		*/	
 	}
 	
 	public void createEnemies()
@@ -234,8 +258,6 @@ public class MyGdxGame extends ApplicationAdapter implements InputProcessor{
 			enemies.add(enemyToAdd);
 		}
 	}
-	
-	
 	
 	public float distanceBetweenPoints(float x1, float y1, float x2, float y2)
 	{
@@ -346,60 +368,6 @@ public class MyGdxGame extends ApplicationAdapter implements InputProcessor{
 		camera.position.set(new Vector3((float)(gridXSize*64)/2,((float)(gridYSize+1)*64)/2,0));
 		camera.update();
 		
-		if(Gdx.input.isButtonPressed((Input.Buttons.LEFT)))
-		{
-			//System.out.println("Left tower is at: " + leftTowerPanel.getX()/64 + ", " + leftTowerPanel.getY()/64);
-			//System.out.println("Right tower is at: " + rightTowerPanel.getX()/64 + ", " + rightTowerPanel.getY()/64);
-			
-			if(leftTowerPanel.getX()==0&&leftTowerPanel.getY()==15*64&&rightTowerPanel.getX()==17*64&&rightTowerPanel.getY()==15*64)
-			{
-				//System.out.println("Both panels are out of view");
-				
-				Vector3 temp = camera.unproject(new Vector3(Gdx.input.getX(), Gdx.input.getY(), 0));
-		        Vector2 tempPos = tileClickedOn(temp.x, temp.y);
-		        //System.out.println(tempPos.x + ", " + tempPos.y);
-		        if(tempPos!=null)
-		        {//&&tempPos.x>=0&&tempPos.x<20)
-			        if(tempPos.x>=0&&tempPos.x<10)
-		        	{
-			        	highlighted.setPosition(tempPos.x*64, tempPos.y*64);
-			        	
-			        	MoveToAction moveToAction = new MoveToAction();
-						moveToAction.setPosition(17*64,0);
-						moveToAction.setDuration(uiMovementSpeed);
-						rightTowerPanel.addAction(moveToAction);
-			        }
-			        
-			        else if(tempPos.x>=10&&tempPos.x<20)
-			        {
-			        	highlighted.setPosition(tempPos.x*64, tempPos.y*64);
-			        	
-			        	MoveToAction moveToAction = new MoveToAction();
-						moveToAction.setPosition(0,0);
-						moveToAction.setDuration(uiMovementSpeed);
-						leftTowerPanel.addAction(moveToAction);
-			        }
-		        }				
-			}
-			
-			else if(leftTowerPanel.getX()==0&&leftTowerPanel.getY()==0)
-			{
-				//System.out.println("Left Panel is down");
-				MoveToAction moveToAction = new MoveToAction();
-				moveToAction.setPosition(0,15*64);
-				moveToAction.setDuration(uiMovementSpeed);
-				leftTowerPanel.addAction(moveToAction);
-			}
-			
-			else if(rightTowerPanel.getX()==17*64&&rightTowerPanel.getY()==0)
-			{
-				//System.out.println("Right tower is down.");
-				MoveToAction moveToAction = new MoveToAction();
-				moveToAction.setPosition(17*64,15*64);
-				moveToAction.setDuration(uiMovementSpeed);
-				rightTowerPanel.addAction(moveToAction);
-			}
-	    }
 		
 		for (Tower currentTower : towers)
 		{
@@ -468,8 +436,99 @@ public class MyGdxGame extends ApplicationAdapter implements InputProcessor{
 
 	@Override
 	public boolean touchUp(int screenX, int screenY, int pointer, int button) {
-		if(button == Buttons.LEFT){
+		if(button == Buttons.LEFT)
+		{
            System.out.println("Left mouse released");
+           if(leftTowerPanel.getX()==0&&leftTowerPanel.getY()==15*64&&rightTowerPanel.getX()==(20-5)*64&&rightTowerPanel.getY()==15*64)
+			{
+				//System.out.println("Both panels are out of view");
+        	   	highlighted.setVisible(true);
+				Vector3 temp = camera.unproject(new Vector3(Gdx.input.getX(), Gdx.input.getY(), 0));
+		        Vector2 tempPos = tileClickedOn(temp.x, temp.y);
+		        //System.out.println(tempPos.x + ", " + tempPos.y);
+		        if(tempPos!=null)
+		        {//&&tempPos.x>=0&&tempPos.x<20)
+			        if(tempPos.x>=0&&tempPos.x<10)
+		        	{
+			        	highlighted.setPosition(tempPos.x*64, tempPos.y*64);
+			        	
+			        	MoveToAction moveToAction = new MoveToAction();
+						moveToAction.setPosition((20-5)*64,0);
+						moveToAction.setDuration(uiMovementSpeed);
+						rightTowerPanel.addAction(moveToAction);
+			        }
+			        
+			        else if(tempPos.x>=10&&tempPos.x<20)
+			        {
+			        	highlighted.setPosition(tempPos.x*64, tempPos.y*64);
+			        	
+			        	MoveToAction moveToAction = new MoveToAction();
+						moveToAction.setPosition(0,0);
+						moveToAction.setDuration(uiMovementSpeed);
+						leftTowerPanel.addAction(moveToAction);
+						for (BackgroundTile availableTowers : availableTowers)
+						{
+							MoveToAction moveToAction2 = new MoveToAction();
+							moveToAction2.setPosition(availableTowers.getX(), availableTowers.getY()-(15*64));
+							moveToAction2.setDuration(uiMovementSpeed);
+							availableTowers.addAction(moveToAction2);
+						}
+			        }
+		        }				
+			}
+			
+			else if(leftTowerPanel.getX()==0&&leftTowerPanel.getY()==0)
+			{
+				//System.out.println("Left Panel is down");
+				Vector3 temp = camera.unproject(new Vector3(screenX, screenY, 0));
+				//System.out.println(temp.x + ", " + temp.y);
+				for (BackgroundTile availableTowers : availableTowers)
+				{
+					if(availableTowers.getX()<temp.x&&availableTowers.getX()+128>temp.x&&availableTowers.getY()<temp.y&&availableTowers.getY()+128>temp.y)
+					{
+						Tower newTower = new Tower();
+						newTower.setPosition(highlighted.getX(), highlighted.getY());
+						newTower.setWidth(64);
+						newTower.setHeight(64);
+						newTower.setRange(200);
+						newTower.setTarget(Target.CLOSEST);
+						newTower.setTexture(new Texture("Kills_skull_3_64x64.png"));
+						towers.add(newTower);
+						
+						for (Tower currentTower : towers)
+						{
+							currentTower.remove();
+							stage2.addActor(currentTower);
+						}
+					}
+				}
+				
+				
+				MoveToAction moveToAction = new MoveToAction();
+				moveToAction.setPosition(0,15*64);
+				moveToAction.setDuration(uiMovementSpeed);
+				leftTowerPanel.addAction(moveToAction);
+				
+				for (BackgroundTile availableTowers : availableTowers)
+				{
+					MoveToAction moveToAction2 = new MoveToAction();
+					moveToAction2.setPosition(availableTowers.getX(), availableTowers.getY()+(15*64));
+					moveToAction2.setDuration(uiMovementSpeed);
+					availableTowers.addAction(moveToAction2);
+				}
+				
+				highlighted.setVisible(false);
+			}
+			
+			else if(rightTowerPanel.getX()==(20-5)*64&&rightTowerPanel.getY()==0)
+			{
+				//System.out.println("Right tower is down.");
+				MoveToAction moveToAction = new MoveToAction();
+				moveToAction.setPosition((20-5)*64,15*64);
+				moveToAction.setDuration(uiMovementSpeed);
+				rightTowerPanel.addAction(moveToAction);
+				highlighted.setVisible(false);
+			}
         }
 		return false;
 	}
