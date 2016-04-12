@@ -1,5 +1,7 @@
 package com.mygdx.game;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Vector;
 
 import com.badlogic.gdx.ApplicationAdapter;
@@ -7,6 +9,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Input.Buttons;
 import com.badlogic.gdx.InputProcessor;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
@@ -27,6 +30,9 @@ import com.badlogic.gdx.scenes.scene2d.actions.AlphaAction;
 import com.badlogic.gdx.scenes.scene2d.actions.DelayAction;
 import com.badlogic.gdx.scenes.scene2d.actions.MoveToAction;
 import com.badlogic.gdx.scenes.scene2d.actions.SequenceAction;
+import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
+import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane.ScrollPaneStyle;
+import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.utils.viewport.Viewport;
 
 public class MyGdxGame extends ApplicationAdapter implements InputProcessor{
@@ -46,10 +52,11 @@ public class MyGdxGame extends ApplicationAdapter implements InputProcessor{
 	int gridYSize = 14;
 	TiledMap tiledMap;
     TiledMapRenderer tiledMapRenderer;
-    BackgroundTile highlighted, rightTowerPanel, leftTowerPanel;
-    Vector<BackgroundTile> availableTowers = new Vector<BackgroundTile>();
-    Boolean leftTowerPanelState, rightTowerPanelState;
+    BackgroundTile highlighted;//, leftTowerPanel;
+    List<BackgroundTile> availableTowers = new ArrayList<BackgroundTile>();
+    //Boolean leftTowerPanelState, rightTowerPanelState;
     float uiMovementSpeed;
+    //Vector2 rightPanelHiddenPosition, leftPanelHiddenPosition, rightPanelShownPosition, leftPanelShownPosition;
 	
 	@Override
 	public void create () 
@@ -133,9 +140,8 @@ public class MyGdxGame extends ApplicationAdapter implements InputProcessor{
 	
 	public void createUI()
 	{
-		leftTowerPanelState = false;
-		rightTowerPanelState = false;
-		
+		Table availableTowerScrollPaneTable = new Table();
+	
 		highlighted = new BackgroundTile();
 		highlighted.setPosition(0-64, 0-64);
 		highlighted.setTexture(new Texture("Tiles/tile_70.png"));
@@ -144,43 +150,54 @@ public class MyGdxGame extends ApplicationAdapter implements InputProcessor{
 
 		stage3.addActor(highlighted);
 		
-		rightTowerPanel = new BackgroundTile();
-		rightTowerPanel.setPosition((20-5)*64, 15*64);
-		rightTowerPanel.setTexture(new Texture("towerPanel.png"));
-		rightTowerPanel.setWidth(5*64);
-		rightTowerPanel.setHeight(14*64);
+		//leftTowerPanel = new BackgroundTile();
+		//leftTowerPanel.setPosition(0*64, 15*64);
+		//leftTowerPanel.setTexture(new Texture("towerPanel.png"));
+		//leftTowerPanel.setWidth(5*64);
+		//leftTowerPanel.setHeight(14*64);
 
-		stage3.addActor(rightTowerPanel);
+		//stage3.addActor(leftTowerPanel);
 		
-		leftTowerPanel = new BackgroundTile();
-		leftTowerPanel.setPosition(0*64, 15*64);
-		leftTowerPanel.setTexture(new Texture("towerPanel.png"));
-		leftTowerPanel.setWidth(5*64);
-		leftTowerPanel.setHeight(14*64);
-
-		stage3.addActor(leftTowerPanel);
-		
-		BackgroundTile availableTower1 = new BackgroundTile();
-		availableTower1.setPosition((1*64)-32, ((13+13)*64)+32);
-		availableTower1.setTexture(new Texture("Kills_skull_3_128x128.png"));
-		availableTower1.setWidth(1*128);
-		availableTower1.setHeight(1*128);
-		availableTowers.add(availableTower1);
-		//stage3.addActor(availableTower1);
-		
-		BackgroundTile availableTower2 = new BackgroundTile();
-		availableTower2.setPosition((3*64)-32, ((13+13)*64)+32);
-		availableTower2.setTexture(new Texture("Kills_skull_3_128x128.png"));
-		availableTower2.setWidth(1*128);
-		availableTower2.setHeight(1*128);
-		availableTowers.add(availableTower2);
-		
-		for (BackgroundTile availableTowers : availableTowers)
+		for(int i = 0; i < 12; i++)
 		{
-			stage3.addActor(availableTowers);
+			BackgroundTile availableTower = new BackgroundTile();
+			//availableTower1.setPosition((1*64)-32, ((13+13)*64)+32);
+			availableTower.setTexture(new Texture("Kills_skull_3_128x128.png"));
+			availableTower.setWidth(1*128);
+			availableTower.setHeight(1*128);
+			
+			availableTowers.add(availableTower);
 		}
 		
-		stage3.addActor(availableTower2);
+		//System.out.println(availableTowers.size());
+		
+		for(int j = 0; j < availableTowers.size(); j++)
+		{
+			if(j % 2 == 0 && j > 1)
+			{
+				availableTowerScrollPaneTable.row();
+			}
+			//availableTowerScrollPaneTable.row();
+			availableTowerScrollPaneTable.add(availableTowers.get(j)).expandX().padTop(48);
+		}
+		
+		availableTowerScrollPaneTable.setDebug(true);
+		
+		availableTowerScrollPaneTable.top();
+		//availableTowerScrollPaneTable.setPosition(0, 0);
+		availableTowerScrollPaneTable.setWidth(3*64);
+		availableTowerScrollPaneTable.setHeight(16*64);
+		
+		ScrollPane testScroll = new ScrollPane(availableTowerScrollPaneTable);
+		testScroll.setPosition(0, 0);
+		testScroll.setWidth(5*64);
+		testScroll.setHeight(14*64);
+		testScroll.setScrollingDisabled(true, false);
+		testScroll.setSmoothScrolling(false);
+		
+		stage3.addActor(testScroll);
+		
+		//stage3.addActor(availableTower2);
 		
 		
 		topBar = new BackgroundTile[gridXSize];
@@ -311,13 +328,11 @@ public class MyGdxGame extends ApplicationAdapter implements InputProcessor{
 		update();
 
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+		
 		stage.getViewport().setCamera(camera);
         stage.act(Gdx.graphics.getDeltaTime());
         stage.draw();
         camera.update();
-        
-        //tiledMapRenderer.setView(camera);
-        //tiledMapRenderer.render();
         
         Gdx.gl.glEnable(GL20.GL_BLEND);
         Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
@@ -334,14 +349,16 @@ public class MyGdxGame extends ApplicationAdapter implements InputProcessor{
         shapeRenderer.end();
         Gdx.gl.glDisable(GL20.GL_BLEND);
         
-		
+        Gdx.input.setInputProcessor(stage2);
 		stage2.getViewport().setCamera(camera);
         stage2.act(Gdx.graphics.getDeltaTime());
         stage2.draw();
         
+        Gdx.input.setInputProcessor(stage3);
         stage3.getViewport().setCamera(camera);
         stage3.act(Gdx.graphics.getDeltaTime());
         stage3.draw();
+        //Gdx.input.setInputProcessor(this);
 	}
 	
 	public Vector2 tileClickedOn(float x, float y)
@@ -439,96 +456,6 @@ public class MyGdxGame extends ApplicationAdapter implements InputProcessor{
 		if(button == Buttons.LEFT)
 		{
            System.out.println("Left mouse released");
-           if(leftTowerPanel.getX()==0&&leftTowerPanel.getY()==15*64&&rightTowerPanel.getX()==(20-5)*64&&rightTowerPanel.getY()==15*64)
-			{
-				//System.out.println("Both panels are out of view");
-        	   	highlighted.setVisible(true);
-				Vector3 temp = camera.unproject(new Vector3(Gdx.input.getX(), Gdx.input.getY(), 0));
-		        Vector2 tempPos = tileClickedOn(temp.x, temp.y);
-		        //System.out.println(tempPos.x + ", " + tempPos.y);
-		        if(tempPos!=null)
-		        {//&&tempPos.x>=0&&tempPos.x<20)
-			        if(tempPos.x>=0&&tempPos.x<10)
-		        	{
-			        	highlighted.setPosition(tempPos.x*64, tempPos.y*64);
-			        	
-			        	MoveToAction moveToAction = new MoveToAction();
-						moveToAction.setPosition((20-5)*64,0);
-						moveToAction.setDuration(uiMovementSpeed);
-						rightTowerPanel.addAction(moveToAction);
-			        }
-			        
-			        else if(tempPos.x>=10&&tempPos.x<20)
-			        {
-			        	highlighted.setPosition(tempPos.x*64, tempPos.y*64);
-			        	
-			        	MoveToAction moveToAction = new MoveToAction();
-						moveToAction.setPosition(0,0);
-						moveToAction.setDuration(uiMovementSpeed);
-						leftTowerPanel.addAction(moveToAction);
-						for (BackgroundTile availableTowers : availableTowers)
-						{
-							MoveToAction moveToAction2 = new MoveToAction();
-							moveToAction2.setPosition(availableTowers.getX(), availableTowers.getY()-(15*64));
-							moveToAction2.setDuration(uiMovementSpeed);
-							availableTowers.addAction(moveToAction2);
-						}
-			        }
-		        }				
-			}
-			
-			else if(leftTowerPanel.getX()==0&&leftTowerPanel.getY()==0)
-			{
-				//System.out.println("Left Panel is down");
-				Vector3 temp = camera.unproject(new Vector3(screenX, screenY, 0));
-				//System.out.println(temp.x + ", " + temp.y);
-				for (BackgroundTile availableTowers : availableTowers)
-				{
-					if(availableTowers.getX()<temp.x&&availableTowers.getX()+128>temp.x&&availableTowers.getY()<temp.y&&availableTowers.getY()+128>temp.y)
-					{
-						Tower newTower = new Tower();
-						newTower.setPosition(highlighted.getX(), highlighted.getY());
-						newTower.setWidth(64);
-						newTower.setHeight(64);
-						newTower.setRange(200);
-						newTower.setTarget(Target.CLOSEST);
-						newTower.setTexture(new Texture("Kills_skull_3_64x64.png"));
-						towers.add(newTower);
-						
-						for (Tower currentTower : towers)
-						{
-							currentTower.remove();
-							stage2.addActor(currentTower);
-						}
-					}
-				}
-				
-				
-				MoveToAction moveToAction = new MoveToAction();
-				moveToAction.setPosition(0,15*64);
-				moveToAction.setDuration(uiMovementSpeed);
-				leftTowerPanel.addAction(moveToAction);
-				
-				for (BackgroundTile availableTowers : availableTowers)
-				{
-					MoveToAction moveToAction2 = new MoveToAction();
-					moveToAction2.setPosition(availableTowers.getX(), availableTowers.getY()+(15*64));
-					moveToAction2.setDuration(uiMovementSpeed);
-					availableTowers.addAction(moveToAction2);
-				}
-				
-				highlighted.setVisible(false);
-			}
-			
-			else if(rightTowerPanel.getX()==(20-5)*64&&rightTowerPanel.getY()==0)
-			{
-				//System.out.println("Right tower is down.");
-				MoveToAction moveToAction = new MoveToAction();
-				moveToAction.setPosition((20-5)*64,15*64);
-				moveToAction.setDuration(uiMovementSpeed);
-				rightTowerPanel.addAction(moveToAction);
-				highlighted.setVisible(false);
-			}
         }
 		return false;
 	}
