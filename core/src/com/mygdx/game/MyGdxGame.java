@@ -7,6 +7,7 @@ import java.util.Vector;
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
+import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.Input.Buttons;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.graphics.Color;
@@ -56,6 +57,8 @@ public class MyGdxGame extends ApplicationAdapter implements InputProcessor{
     List<BackgroundTile> availableTowers = new ArrayList<BackgroundTile>();
     //Boolean leftTowerPanelState, rightTowerPanelState;
     float uiMovementSpeed;
+    InputMultiplexer im;
+    Boolean tempScroll = false;
     //Vector2 rightPanelHiddenPosition, leftPanelHiddenPosition, rightPanelShownPosition, leftPanelShownPosition;
 	
 	@Override
@@ -77,6 +80,15 @@ public class MyGdxGame extends ApplicationAdapter implements InputProcessor{
 		createUI();
 		createTowers();
 		createEnemies();
+		
+		//Gdx.input.setInputProcessor(this);
+		//Gdx.input.setInputProcessor(stage3);
+		
+		im = new InputMultiplexer();
+		im.addProcessor(this);
+		im.addProcessor(stage3);
+		
+		Gdx.input.setInputProcessor(im);
 		
 		startTime = System.currentTimeMillis();
 		
@@ -349,12 +361,12 @@ public class MyGdxGame extends ApplicationAdapter implements InputProcessor{
         shapeRenderer.end();
         Gdx.gl.glDisable(GL20.GL_BLEND);
         
-        Gdx.input.setInputProcessor(stage2);
+        //Gdx.input.setInputProcessor(stage2);
 		stage2.getViewport().setCamera(camera);
         stage2.act(Gdx.graphics.getDeltaTime());
         stage2.draw();
         
-        Gdx.input.setInputProcessor(stage3);
+        //Gdx.input.setInputProcessor(stage3);
         stage3.getViewport().setCamera(camera);
         stage3.act(Gdx.graphics.getDeltaTime());
         stage3.draw();
@@ -455,14 +467,25 @@ public class MyGdxGame extends ApplicationAdapter implements InputProcessor{
 	public boolean touchUp(int screenX, int screenY, int pointer, int button) {
 		if(button == Buttons.LEFT)
 		{
-           System.out.println("Left mouse released");
+			if(tempScroll==true)
+			{
+				System.out.println("Left mouse release - Mouse scrolled");
+				tempScroll=false;
+			}
+			
+			else
+			{
+				System.out.println("Left mouse released - Mouse NOT scrolled");
+			}
         }
 		return false;
 	}
 
 	@Override
-	public boolean touchDragged(int screenX, int screenY, int pointer) {
-		// TODO Auto-generated method stub
+	public boolean touchDragged(int screenX, int screenY, int pointer) 
+	{
+		tempScroll=true;
+		System.out.println("Scrolled");
 		return false;
 	}
 
