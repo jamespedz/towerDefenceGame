@@ -15,6 +15,7 @@ public class Enemy extends Actor
 
     public void draw(Batch batch, float alpha)
     {
+    	batch.setColor(1,1,1,1);
         //batch.draw(texture,posX,posY);
         batch.draw(texture, this.getX(), this.getY(), texture.getWidth()/2, texture.getHeight()/2, texture.getWidth(), texture.getHeight(), 1f, 1f, rotation, 0, 0, texture.getWidth(), texture.getHeight(), false, false);
 
