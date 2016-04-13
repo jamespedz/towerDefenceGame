@@ -10,6 +10,23 @@ public class Tower extends Actor
     int rotation;
     int range;
     Target target;
+    
+    public Tower(float x, float y, int range, Target target, Texture texture)
+    {
+    	this.setPosition(x, y);
+    	this.range = range;
+    	this.target = target;
+    	this.texture = texture;
+    	
+    }
+    
+    public Tower(int range, int height, int width, Texture texture)
+    {
+    	this.range = range;
+    	this.texture = texture;
+    	this.setHeight(height);
+    	this.setWidth(width);
+    }
 
     public void draw(Batch batch, float alpha)
     {
@@ -42,6 +59,11 @@ public class Tower extends Actor
     public void setTexture(Texture texture)
     {
     	this.texture = texture;
+    }
+    
+    public Texture getTexture()
+    {
+    	return texture;
     }
     
     public void setRotation(int rotation)

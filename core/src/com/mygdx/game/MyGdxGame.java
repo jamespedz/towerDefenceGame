@@ -27,6 +27,8 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Group;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
+import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.actions.AlphaAction;
 import com.badlogic.gdx.scenes.scene2d.actions.DelayAction;
@@ -35,9 +37,11 @@ import com.badlogic.gdx.scenes.scene2d.actions.SequenceAction;
 import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
 import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane.ScrollPaneStyle;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
+import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.viewport.Viewport;
 
-public class MyGdxGame extends ApplicationAdapter implements InputProcessor{
+public class MyGdxGame extends ApplicationAdapter implements InputProcessor
+{
 	SpriteBatch batch;
 	Texture img;
 	Stage stage;//, stage2, stage3;
@@ -46,16 +50,17 @@ public class MyGdxGame extends ApplicationAdapter implements InputProcessor{
 	ShapeRenderer shapeRenderer;
 	Vector<Tower> towers = new Vector<Tower>();
 	Vector<Enemy> enemies = new Vector<Enemy>();
+	Vector<BackgroundTile> backgroundTiles = new Vector<BackgroundTile>();
 	Enemy enemy1, enemy2;
 	long startTime;
-	BackgroundTile[][] grid;
+	//BackgroundTile[][] grid;
 	BackgroundTile[] topBar;
 	int gridXSize = 20;
 	int gridYSize = 14;
 	TiledMap tiledMap;
     TiledMapRenderer tiledMapRenderer;
     BackgroundTile highlighted;//, leftTowerPanel;
-    List<BackgroundTile> availableTowers = new ArrayList<BackgroundTile>();
+    List<AvailableTower> availableTowers = new ArrayList<AvailableTower>();
     //Boolean leftTowerPanelState, rightTowerPanelState;
     float uiMovementSpeed;
     InputMultiplexer im;
@@ -64,42 +69,81 @@ public class MyGdxGame extends ApplicationAdapter implements InputProcessor{
     
     Group backgroundGroup, enemiesGroup, towersGroup, UIGroup;
     
-    //Vector2 rightPanelHiddenPosition, leftPanelHiddenPosition, rightPanelShownPosition, leftPanelShownPosition;
-	
+    InputListener clickListener;
+
 	@Override
 	public void create () 
 	{
+		//initialise all the Groups to use as layers
 		backgroundGroup = new Group();
 		enemiesGroup = new Group();
 		towersGroup = new Group();
 		UIGroup = new Group();
 		
+		//Set the speed of the UI movement (available tower bar ect)
 		uiMovementSpeed = 0.1f;
+		
+		//initialise shapeRenderer for drawing tower ranges
 		shapeRenderer = new ShapeRenderer();
 		
+		//initialise the stage to add actors to
 		stage = new Stage();
 		
+		//set camera to fit the screen size (i think)
 		camera = new OrthographicCamera(64*gridYSize+1, 64*gridXSize);
 		camera.position.set(camera.viewportWidth / 2f, camera.viewportHeight / 2f, 0);
 		camera.update();
+		
+		//create the clickListener to allow actors to be clicked on
+		clickListener = new InputListener() 
+		{
+		    @Override
+		    public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) 
+		    {
+		        return true;
+		    }
+		    @Override
+		    public void touchUp (InputEvent event, float x, float y, int pointer, int button) 
+		    {
+		    	if(tempScroll == true)
+		    	{
+		    		tempScroll = false;
+		    	}
+		    	
+		    	else
+		    	{
+		    		System.out.println(event.getTarget().getClass());
+		    		System.out.println(event.getTarget().getX() + ", " + event.getTarget().getY());
+		    		
+		    		for (BackgroundTile background : backgroundTiles)
+		    		{
+		    			if(event.getTarget() == background)
+		    			{
+		    				System.out.println("Background tile found");
+		    			}
+		    		}
+		    	}
+		    }
+		};
 	
+		//Creates all the elements for the screen and add them to the groups
 		createMap();
 		createEnemies();
 		createTowers();
 		createUI();
+		
+		//Add all the groups to the stage
 		addLayers();
 		
-		//Gdx.input.setInputProcessor(this);
-		//Gdx.input.setInputProcessor(stage3);
-		
+		//Create an InputMultiplexer to allow multiple inputProcessors
 		im = new InputMultiplexer();
 		im.addProcessor(this);
 		im.addProcessor(stage);
 		
 		Gdx.input.setInputProcessor(im);
 		
+		//set start time to allow enemies to be added.
 		startTime = System.currentTimeMillis();
-		
 	}
 	
 	public void addLayers()
@@ -140,8 +184,6 @@ public class MyGdxGame extends ApplicationAdapter implements InputProcessor{
 	
 	public void createMap()
 	{
-		grid = new BackgroundTile[gridXSize][gridYSize]; //Grid for background
-
 		for(int i = 0; i < gridXSize; i++)
 		{
 			for(int j = 0; j < gridYSize; j++)
@@ -149,20 +191,18 @@ public class MyGdxGame extends ApplicationAdapter implements InputProcessor{
 				BackgroundTile actor = new BackgroundTile();
 				
 				actor.setTexture(new Texture("Tiles/tile_01.png"));
-
-				actor.setX(i*64);
-				actor.setY(j*64);
+				actor.setWidth(1*64);
+				actor.setHeight(1*64);
 				actor.setPosition(i*64, j*64);
-				grid[i][j] = actor;
+				actor.addListener(clickListener);
+				//System.out.println("Listener has been added to backgroundTile");
+				backgroundTiles.add(actor);
 			}
 		}
 		
-		for(int k = 0; k < gridXSize; k++)
+		for(BackgroundTile backgroundTile : backgroundTiles)
 		{
-			for(int l = 0; l < gridYSize; l++)
-			{
-				backgroundGroup.addActor((grid[k][l]));
-			}
+			backgroundGroup.addActor(backgroundTile);
 		}
 	}
 	
@@ -178,26 +218,18 @@ public class MyGdxGame extends ApplicationAdapter implements InputProcessor{
 
 		UIGroup.addActor(highlighted);
 		
-		//leftTowerPanel = new BackgroundTile();
-		//leftTowerPanel.setPosition(0*64, 15*64);
-		//leftTowerPanel.setTexture(new Texture("towerPanel.png"));
-		//leftTowerPanel.setWidth(5*64);
-		//leftTowerPanel.setHeight(14*64);
-
-		//stage3.addActor(leftTowerPanel);
-		
 		for(int i = 0; i < 12; i++)
 		{
-			BackgroundTile availableTower = new BackgroundTile();
-			//availableTower1.setPosition((1*64)-32, ((13+13)*64)+32);
-			availableTower.setTexture(new Texture("Kills_skull_3_128x128.png"));
+			AvailableTower availableTower = new AvailableTower();
+
 			availableTower.setWidth(1*128);
 			availableTower.setHeight(1*128);
+			availableTower.setTower(new Tower(200, 64, 64, new Texture("Kills_skull_3_64x64.png")));
+			availableTower.setTexture(new Texture("Kills_skull_3_128x128.png"));
+			availableTower.addListener(clickListener);
 			
 			availableTowers.add(availableTower);
 		}
-		
-		//System.out.println(availableTowers.size());
 		
 		for(int j = 0; j < availableTowers.size(); j++)
 		{
@@ -205,14 +237,12 @@ public class MyGdxGame extends ApplicationAdapter implements InputProcessor{
 			{
 				availableTowerScrollPaneTable.row();
 			}
-			//availableTowerScrollPaneTable.row();
 			availableTowerScrollPaneTable.add(availableTowers.get(j)).expandX().padTop(48);
 		}
 		
 		availableTowerScrollPaneTable.setDebug(true);
 		
 		availableTowerScrollPaneTable.top();
-		//availableTowerScrollPaneTable.setPosition(0, 0);
 		availableTowerScrollPaneTable.setWidth(3*64);
 		availableTowerScrollPaneTable.setHeight(16*64);
 		
@@ -278,8 +308,6 @@ public class MyGdxGame extends ApplicationAdapter implements InputProcessor{
 	
 	public void createEnemies()
 	{
-		
-		
 		int startDelay = 250;
 		Vector2 startPosition = new Vector2(((0*64)), ((11*64)));
 		
@@ -293,6 +321,7 @@ public class MyGdxGame extends ApplicationAdapter implements InputProcessor{
 			enemyToAdd.setTexture(new Texture("Kills_skull_4_64x64.png"));
 			enemyToAdd.setStartTime(i*startDelay);
 			enemyToAdd.addAction(pathToFollow);
+			enemyToAdd.addListener(clickListener);
 			
 			enemies.add(enemyToAdd);
 		}
@@ -347,7 +376,7 @@ public class MyGdxGame extends ApplicationAdapter implements InputProcessor{
 	@Override
 	public void render() 
 	{
-		System.out.println("This is the render method");
+		//System.out.println("This is the render method");
 		
 		update();
 
@@ -391,7 +420,7 @@ public class MyGdxGame extends ApplicationAdapter implements InputProcessor{
 	
 	public void update()
 	{
-		System.out.println("This is the update method");
+		//System.out.println("This is the update method");
 		camera.viewportHeight = (64*15);
 		//System.out.println((float)Gdx.graphics.getWidth()/(float)Gdx.graphics.getHeight());
 		camera.viewportWidth = ((float)(64*15)*((float)Gdx.graphics.getWidth()/(float)Gdx.graphics.getHeight()));
@@ -465,39 +494,32 @@ public class MyGdxGame extends ApplicationAdapter implements InputProcessor{
 	}
 
 	@Override
-	public boolean touchUp(int screenX, int screenY, int pointer, int button) {
-		if(button == Buttons.LEFT)
+	public boolean touchUp(int screenX, int screenY, int pointer, int button) 
+	{
+		if(tempScroll == true)
 		{
-			if(tempScroll==true)
-			{
-				System.out.println("Left mouse release - Mouse scrolled");
-				tempScroll=false;
-			}
-			
-			else
-			{
-				System.out.println("Left mouse released - Mouse NOT scrolled");
-			}
-        }
+			tempScroll = false;
+		}
 		return false;
 	}
 
 	@Override
 	public boolean touchDragged(int screenX, int screenY, int pointer) 
 	{
-		tempScroll=true;
-		System.out.println("Scrolled");
+		tempScroll = true;
 		return false;
 	}
 
 	@Override
-	public boolean mouseMoved(int screenX, int screenY) {
+	public boolean mouseMoved(int screenX, int screenY) 
+	{
 		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
-	public boolean scrolled(int amount) {
+	public boolean scrolled(int amount) 
+	{
 		// TODO Auto-generated method stub
 		return false;
 	}
